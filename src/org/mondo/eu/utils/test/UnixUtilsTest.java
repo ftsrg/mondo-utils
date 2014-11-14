@@ -17,7 +17,7 @@ public class UnixUtilsTest {
 
 	@Test
 	public void test() throws FileNotFoundException, IOException {
-		BufferedReader reader = UnixUtils.exec("ls /", Collections.<String, String> emptyMap(), false);
+		BufferedReader reader = UnixUtils.exec("ls /", Collections.<String, String> emptyMap());
 		String line;
 		while ((line = reader.readLine()) != null) {
 			System.out.println(line);
@@ -26,7 +26,7 @@ public class UnixUtilsTest {
 
 	@Test(expected = ExecuteException.class)
 	public void testFail() throws FileNotFoundException, IOException {
-		BufferedReader reader = UnixUtils.exec("ls :", Collections.<String, String> emptyMap(), false);
+		BufferedReader reader = UnixUtils.exec("ls :", Collections.<String, String> emptyMap());
 		String line;
 		while ((line = reader.readLine()) != null) {
 			System.out.println(line);
