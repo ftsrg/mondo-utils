@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
@@ -62,7 +63,7 @@ public class UnixUtils {
 		String tempScript = UnixUtils.createTempFileFromScript(command);
 
 		String scriptCommand = tempScript + " " + arguments;
-		BufferedReader reader = exec(scriptCommand, environmentVariables, showOutput);
+		BufferedReader reader = exec(scriptCommand, environmentVariables);
 		
 		if (showOutput) {
 			System.out.println("Command: " + scriptCommand);
@@ -74,15 +75,19 @@ public class UnixUtils {
 		}
 	}
 
-	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables,
-			boolean showOutput) throws FileNotFoundException, IOException {
+	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables) throws FileNotFoundException, IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		return exec(command, environmentVariables, stream);
+	}
+
+	private static BufferedReader exec(final String command, final Map<String, String> environmentVariables,
+			ByteArrayOutputStream byteArrayOutputStream) throws IOException, ExecuteException {
 		final Map<?, ?> executionEnvironment = EnvironmentUtils.getProcEnvironment();
 		for (Entry<String, String> environmentVariable : environmentVariables.entrySet()) {
 			String keyAndValue = environmentVariable.getKey() + "=" + environmentVariable.getValue();
 			EnvironmentUtils.addVariableToEnvironment(executionEnvironment, keyAndValue);
 		}
 
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		PumpStreamHandler streamHandler = new PumpStreamHandler(byteArrayOutputStream);
 
 		CommandLine commandLine = new CommandLine("/bin/bash");
