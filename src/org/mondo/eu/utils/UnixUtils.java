@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -29,6 +30,7 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 
 public class UnixUtils {
 
@@ -63,44 +65,34 @@ public class UnixUtils {
 		String tempScript = UnixUtils.createTempFileFromScript(command);
 
 		String scriptCommand = tempScript + " " + arguments;
-		BufferedReader reader = exec(scriptCommand, environmentVariables);
-		
 		if (showOutput) {
 			System.out.println("Command: " + scriptCommand);
-			reader.readLine();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				System.out.println(line);
-			}
 		}
+		exec(scriptCommand, environmentVariables, showOutput ? System.out : new NullOutputStream());
 	}
 
 	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables) throws FileNotFoundException, IOException {
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		return exec(command, environmentVariables, stream);
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		exec(command, environmentVariables, byteArrayOutputStream);
+		return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())));
 	}
 
-	private static BufferedReader exec(final String command, final Map<String, String> environmentVariables,
-			ByteArrayOutputStream byteArrayOutputStream) throws IOException, ExecuteException {
+	public static void exec(final String command, final Map<String, String> environmentVariables,
+			OutputStream outputStream) throws IOException, ExecuteException {
 		final Map<?, ?> executionEnvironment = EnvironmentUtils.getProcEnvironment();
 		for (Entry<String, String> environmentVariable : environmentVariables.entrySet()) {
 			String keyAndValue = environmentVariable.getKey() + "=" + environmentVariable.getValue();
 			EnvironmentUtils.addVariableToEnvironment(executionEnvironment, keyAndValue);
 		}
 
-		PumpStreamHandler streamHandler = new PumpStreamHandler(byteArrayOutputStream);
+		PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
 
 		CommandLine commandLine = new CommandLine("/bin/bash");
 		commandLine.addArguments(new String[] { "-c", command }, false);
-		
+
 		DefaultExecutor executor = new DefaultExecutor();
 		executor.setStreamHandler(streamHandler);
 		executor.execute(commandLine, executionEnvironment);
-		
-		return toBufferedReader(byteArrayOutputStream);
 	}
-	
-	public static BufferedReader toBufferedReader(ByteArrayOutputStream byteArrayOutputStream) {
-		return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())));
-	}
+
 }
