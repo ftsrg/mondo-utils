@@ -1,4 +1,4 @@
-package org.mondo.eu.utils.test;
+package eu.mondo.utils.test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,7 +10,8 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.junit.Test;
-import org.mondo.eu.utils.UnixUtils;
+
+import eu.mondo.utils.UnixUtils;
 
 public class UnixUtilsTest {
 
