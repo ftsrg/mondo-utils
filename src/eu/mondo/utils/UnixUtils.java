@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,12 +33,12 @@ import org.apache.commons.io.output.NullOutputStream;
 
 public class UnixUtils {
 
-	public static String createTempFileFromScript(final String script) throws IOException, FileNotFoundException {
+	public static String createTempFileFromScript(final String script) throws IOException {
 		return createTempFileFromResource(script, ".sh", true);
 	}
 
 	public static String createTempFileFromResource(final String script, final String extension,
-			final boolean executable) throws IOException, FileNotFoundException {
+			final boolean executable) throws IOException {
 		final InputStream scriptInputStream = UnixUtils.class.getResourceAsStream("/" + script);
 
 		// create a temporary file
@@ -55,12 +54,12 @@ public class UnixUtils {
 	}
 
 	public static void execResourceScript(final String command, final Map<String, String> environmentVariables,
-			final boolean showOutput) throws FileNotFoundException, IOException {
+			final boolean showOutput) throws IOException {
 		execResourceScript(command, "", environmentVariables, showOutput);
 	}
 
 	public static void execResourceScript(final String command, final String arguments,
-			final Map<String, String> environmentVariables, final boolean showOutput) throws FileNotFoundException,
+			final Map<String, String> environmentVariables, final boolean showOutput) throws
 			IOException {
 		String tempScript = UnixUtils.createTempFileFromScript(command);
 
@@ -71,7 +70,7 @@ public class UnixUtils {
 		exec(scriptCommand, environmentVariables, showOutput ? System.out : new NullOutputStream());
 	}
 
-	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables) throws FileNotFoundException, IOException {
+	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables) throws IOException {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		exec(command, environmentVariables, byteArrayOutputStream);
 		return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())));
