@@ -4,7 +4,9 @@ Bundle-SymbolicName: eu.mondo.utils;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.apache.commons.exec;bundle-version="1.1.0",
  org.apache.commons.io;bundle-version="2.0.1",
- org.junit;bundle-version="4.11.0"
+ org.junit;bundle-version="4.11.0",
+ org.apache.httpcomponents.httpclient;bundle-version="4.1.3",
+ org.apache.httpcomponents.httpcore;bundle-version="4.1.4"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .
