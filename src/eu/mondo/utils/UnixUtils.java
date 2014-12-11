@@ -31,6 +31,8 @@ import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 
+import com.google.common.collect.ImmutableMap;
+
 public class UnixUtils {
 
 	public static String createTempFileFromScript(final String script) throws IOException {
@@ -74,6 +76,10 @@ public class UnixUtils {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		exec(command, environmentVariables, byteArrayOutputStream);
 		return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())));
+	}
+
+	public static BufferedReader exec(String command) throws IOException {
+		return exec(command, ImmutableMap.<String, String>of());
 	}
 
 	public static void exec(final String command, final Map<String, String> environmentVariables,

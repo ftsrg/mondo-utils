@@ -1,26 +1,33 @@
 package eu.mondo.utils;
 
 import java.io.IOException;
-import java.text.MessageFormat;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIUtils;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
+
+import com.google.common.collect.ImmutableList;
 
 public class WebServiceUtils {
 
-	public static HttpResponse call(String ip, int port, String path) {
+	public static HttpResponse call(String ip, int port, String path, NameValuePair... params) {
 		try {
 			DefaultHttpClient httpClient = new DefaultHttpClient();
-			HttpGet httpGet = new HttpGet(MessageFormat.format("http://{0}:{1,number,#}{2}", ip, port, path));
+			URI uri = URIUtils.createURI("http", ip, port, path, URLEncodedUtils.format(ImmutableList.copyOf(params), "UTF-8"), null);
+			HttpGet httpGet = new HttpGet(uri);
 			HttpResponse response = httpClient.execute(httpGet);
 			httpClient.getConnectionManager().shutdown();
 			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-			  throw new RuntimeException("Calling web service failed, status: " + response.getStatusLine());
+				throw new RuntimeException("Web service responded with not OK: " + response.getStatusLine());
 			}
 			return response;
-		} catch (IOException e) {
+		} catch (IOException | URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
