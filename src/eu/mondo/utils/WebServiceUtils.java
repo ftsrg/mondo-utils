@@ -1,33 +1,34 @@
 package eu.mondo.utils;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
+import javax.ws.rs.core.MediaType;
+
 import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 
 import com.google.common.collect.ImmutableList;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 public class WebServiceUtils {
 
-	public static HttpResponse call(String ip, int port, String path, NameValuePair... params) {
+	public static ClientResponse call(String host, int port, String path, NameValuePair... params) {
 		try {
-			DefaultHttpClient httpClient = new DefaultHttpClient();
-			URI uri = URIUtils.createURI("http", ip, port, path, URLEncodedUtils.format(ImmutableList.copyOf(params), "UTF-8"), null);
-			HttpGet httpGet = new HttpGet(uri);
-			HttpResponse response = httpClient.execute(httpGet);
-			httpClient.getConnectionManager().shutdown();
-			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-				throw new RuntimeException("Web service responded with not OK: " + response.getStatusLine());
+		    URI uri = URIUtils.createURI("http", host, port, path, URLEncodedUtils.format(ImmutableList.copyOf(params), "UTF-8"), null);
+		    DefaultClientConfig config = new DefaultClientConfig(JacksonJsonProvider.class);
+		    ClientResponse response = Client.create(config).resource(uri).accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+			Status status = response.getClientResponseStatus();
+			if (status != Status.OK) {
+				throw new RuntimeException("Web service responded with not OK: " + status);
 			}
 			return response;
-		} catch (IOException | URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
