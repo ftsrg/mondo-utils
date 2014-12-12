@@ -24,6 +24,11 @@ public class UnixUtilsTest {
 	public void testFail() throws FileNotFoundException, IOException {
 		UnixUtils.exec("ls :", Collections.<String, String> emptyMap(), System.out);
 	}
+	
+	@Test(expected = ExecuteException.class)
+	public void testNoSuchScript() throws FileNotFoundException, IOException {
+		UnixUtils.exec("./foo", Collections.<String, String> emptyMap(), System.out);
+	}
 
 	@Test
 	public void testEnvironmentVariables() throws IOException {
