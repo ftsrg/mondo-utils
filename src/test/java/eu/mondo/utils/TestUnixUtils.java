@@ -1,4 +1,4 @@
-package eu.mondo.utils.test;
+package eu.mondo.utils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import eu.mondo.utils.UnixUtils;
 
-public class UnixUtilsTest {
+public class TestUnixUtils {
 
 	@Test
 	public void test() throws FileNotFoundException, IOException {
