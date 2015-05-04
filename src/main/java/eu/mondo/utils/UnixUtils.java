@@ -63,9 +63,9 @@ public class UnixUtils {
 	public static void execResourceScript(final String command, final String arguments,
 			final Map<String, String> environmentVariables, final boolean showOutput) throws
 			IOException {
-		String tempScript = UnixUtils.createTempFileFromScript(command);
+		final String tempScript = UnixUtils.createTempFileFromScript(command);
 
-		String scriptCommand = tempScript + " " + arguments;
+		final String scriptCommand = tempScript + " " + arguments;
 		if (showOutput) {
 			System.out.println("Command: " + scriptCommand);
 		}
@@ -73,29 +73,29 @@ public class UnixUtils {
 	}
 
 	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables) throws IOException {
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		exec(command, environmentVariables, byteArrayOutputStream);
 		return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())));
 	}
 
-	public static BufferedReader exec(String command) throws IOException {
+	public static BufferedReader exec(final String command) throws IOException {
 		return exec(command, ImmutableMap.<String, String>of());
 	}
 
 	public static void exec(final String command, final Map<String, String> environmentVariables,
-			OutputStream outputStream) throws IOException, ExecuteException {
+			final OutputStream outputStream) throws IOException, ExecuteException {
 		final Map<?, ?> executionEnvironment = EnvironmentUtils.getProcEnvironment();
-		for (Entry<String, String> environmentVariable : environmentVariables.entrySet()) {
-			String keyAndValue = environmentVariable.getKey() + "=" + environmentVariable.getValue();
+		for (final Entry<String, String> environmentVariable : environmentVariables.entrySet()) {
+			final String keyAndValue = environmentVariable.getKey() + "=" + environmentVariable.getValue();
 			EnvironmentUtils.addVariableToEnvironment(executionEnvironment, keyAndValue);
 		}
 
-		PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+		final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
 
-		CommandLine commandLine = new CommandLine("/bin/bash");
+		final CommandLine commandLine = new CommandLine("/bin/bash");
 		commandLine.addArguments(new String[] { "-c", command }, false);
 
-		DefaultExecutor executor = new DefaultExecutor();
+		final DefaultExecutor executor = new DefaultExecutor();
 		executor.setStreamHandler(streamHandler);
 		executor.execute(commandLine, executionEnvironment);
 	}
