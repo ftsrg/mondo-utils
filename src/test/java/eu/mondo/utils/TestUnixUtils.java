@@ -11,23 +11,21 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.junit.Test;
 
-import eu.mondo.utils.UnixUtils;
-
 public class TestUnixUtils {
 
 	@Test
 	public void test() throws FileNotFoundException, IOException {
-		UnixUtils.exec("ls /", Collections.<String, String> emptyMap(), System.out);
+		UnixUtils.exec("ls /", Collections.<String, String> emptyMap(), true, System.out);
 	}
 
 	@Test(expected = ExecuteException.class)
 	public void testFail() throws FileNotFoundException, IOException {
-		UnixUtils.exec("ls :", Collections.<String, String> emptyMap(), System.out);
+		UnixUtils.exec("ls :", Collections.<String, String> emptyMap(), true, System.out);
 	}
-	
+
 	@Test(expected = ExecuteException.class)
 	public void testNoSuchScript() throws FileNotFoundException, IOException {
-		UnixUtils.exec("./foo", Collections.<String, String> emptyMap(), System.out);
+		UnixUtils.exec("./foo", Collections.<String, String> emptyMap(), true, System.out);
 	}
 
 	@Test
@@ -35,7 +33,7 @@ public class TestUnixUtils {
 		final Map<?, ?> executionEnvironment = EnvironmentUtils.getProcEnvironment();
 		EnvironmentUtils.addVariableToEnvironment(executionEnvironment, "HELLO=world");
 
-		CommandLine commandLine = new CommandLine("/bin/bash");
+		final CommandLine commandLine = new CommandLine("/bin/bash");
 		commandLine.addArguments(new String[] { "-c", "echo $HELLO" }, false);
 		new DefaultExecutor().execute(commandLine);
 	}

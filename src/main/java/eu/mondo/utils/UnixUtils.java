@@ -42,9 +42,9 @@ public class UnixUtils {
 	 * @param showOutput
 	 * @throws IOException
 	 */
-	public static void execResourceScript(final String command, final Map<String, String> environmentVariables, final boolean showOutput)
-			throws IOException {
-		execResourceScript(command, "", environmentVariables, showOutput);
+	public static void execResourceScript(final String command, final Map<String, String> environmentVariables, final boolean showCommand,
+			final boolean showOutput) throws IOException {
+		execResourceScript(command, "", environmentVariables, showCommand, showOutput);
 	}
 
 	/**
@@ -57,14 +57,14 @@ public class UnixUtils {
 	 * @throws IOException
 	 */
 	public static void execResourceScript(final String command, final String arguments, final Map<String, String> environmentVariables,
-			final boolean showOutput) throws IOException {
+			final boolean showCommand, final boolean showOutput) throws IOException {
 		final String tempScript = UnixUtils.createTempFileFromScript(command);
 
 		final String scriptCommand = tempScript + " " + arguments;
 		if (showOutput) {
 			System.out.println("Command: " + scriptCommand);
 		}
-		exec(scriptCommand, environmentVariables, showOutput ? System.out : new NullOutputStream());
+		exec(scriptCommand, environmentVariables, showCommand, showOutput ? System.out : new NullOutputStream());
 	}
 
 	/**
@@ -76,10 +76,10 @@ public class UnixUtils {
 	 * @throws IOException
 	 * @throws ExecuteException
 	 */
-	public static InputStream execToStream(final String command, final Map<String, String> environmentVariables)
+	public static InputStream execToStream(final String command, final Map<String, String> environmentVariables, final boolean showCommand)
 			throws IOException, ExecuteException {
 		final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		exec(command, environmentVariables, byteArrayOutputStream);
+		exec(command, environmentVariables, showCommand, byteArrayOutputStream);
 		final ByteArrayInputStream is = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
 		return is;
 	}
@@ -92,8 +92,9 @@ public class UnixUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables) throws IOException {
-		final InputStream is = execToStream(command, environmentVariables);
+	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables, final boolean showCommand)
+			throws IOException {
+		final InputStream is = execToStream(command, environmentVariables, showCommand);
 		return new BufferedReader(new InputStreamReader(is));
 	}
 
@@ -104,8 +105,8 @@ public class UnixUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static BufferedReader exec(final String command) throws IOException {
-		return exec(command, ImmutableMap.<String, String> of());
+	public static BufferedReader exec(final String command, final boolean showCommand) throws IOException {
+		return exec(command, ImmutableMap.<String, String> of(), showCommand);
 	}
 
 	/**
@@ -117,8 +118,8 @@ public class UnixUtils {
 	 * @throws IOException
 	 * @throws ExecuteException
 	 */
-	public static void exec(final String command, final Map<String, String> environmentVariables, final OutputStream outputStream)
-			throws IOException, ExecuteException {
+	public static void exec(final String command, final Map<String, String> environmentVariables, final boolean showCommand,
+			final OutputStream outputStream) throws IOException, ExecuteException {
 		final Map<?, ?> executionEnvironment = EnvironmentUtils.getProcEnvironment();
 		for (final Entry<String, String> environmentVariable : environmentVariables.entrySet()) {
 			final String keyAndValue = environmentVariable.getKey() + "=" + environmentVariable.getValue();
@@ -126,6 +127,10 @@ public class UnixUtils {
 		}
 
 		final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+
+		if (showCommand) {
+			System.out.println(command);
+		}
 
 		final CommandLine commandLine = new CommandLine("/bin/bash");
 		commandLine.addArguments(new String[] { "-c", command }, false);
