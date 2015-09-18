@@ -61,7 +61,7 @@ public class UnixUtils {
 		final String tempScript = UnixUtils.createTempFileFromScript(command);
 
 		final String scriptCommand = tempScript + " " + arguments;
-		if (showOutput) {
+		if (showCommand) {
 			System.out.println("Command: " + scriptCommand);
 		}
 		exec(scriptCommand, environmentVariables, showCommand, showOutput ? System.out : new NullOutputStream());
