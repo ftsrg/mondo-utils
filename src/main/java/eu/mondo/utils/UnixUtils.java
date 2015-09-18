@@ -10,7 +10,6 @@ package eu.mondo.utils;
  * Gabor Szarnyas - initial API and implementation
  *******************************************************************************/
 
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,34 +34,30 @@ import com.google.common.collect.ImmutableMap;
 
 public class UnixUtils {
 
-	public static String createTempFileFromScript(final String script) throws IOException {
-		return createTempFileFromResource(script, ".sh", true);
-	}
-
-	public static String createTempFileFromResource(final String script, final String extension,
-			final boolean executable) throws IOException {
-		final InputStream scriptInputStream = UnixUtils.class.getResourceAsStream("/" + script);
-
-		// create a temporary file
-		final File scriptTempFile = File.createTempFile("unix-utils-", extension);
-		scriptTempFile.deleteOnExit();
-		try (FileOutputStream out = new FileOutputStream(scriptTempFile)) {
-			IOUtils.copy(scriptInputStream, out);
-		}
-		scriptTempFile.setExecutable(executable);
-
-		final String command = scriptTempFile.getAbsolutePath();
-		return command;
-	}
-
-	public static void execResourceScript(final String command, final Map<String, String> environmentVariables,
-			final boolean showOutput) throws IOException {
+	/**
+	 * Execute a script (bundled with the application) without arguments
+	 * 
+	 * @param command
+	 * @param environmentVariables
+	 * @param showOutput
+	 * @throws IOException
+	 */
+	public static void execResourceScript(final String command, final Map<String, String> environmentVariables, final boolean showOutput)
+			throws IOException {
 		execResourceScript(command, "", environmentVariables, showOutput);
 	}
 
-	public static void execResourceScript(final String command, final String arguments,
-			final Map<String, String> environmentVariables, final boolean showOutput) throws
-			IOException {
+	/**
+	 * Execute a script (bundled with the application)
+	 * 
+	 * @param command
+	 * @param arguments
+	 * @param environmentVariables
+	 * @param showOutput
+	 * @throws IOException
+	 */
+	public static void execResourceScript(final String command, final String arguments, final Map<String, String> environmentVariables,
+			final boolean showOutput) throws IOException {
 		final String tempScript = UnixUtils.createTempFileFromScript(command);
 
 		final String scriptCommand = tempScript + " " + arguments;
@@ -72,18 +67,58 @@ public class UnixUtils {
 		exec(scriptCommand, environmentVariables, showOutput ? System.out : new NullOutputStream());
 	}
 
-	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables) throws IOException {
+	/**
+	 * Execute a command with the specified environment variables
+	 * 
+	 * @param command
+	 * @param environmentVariables
+	 * @return
+	 * @throws IOException
+	 * @throws ExecuteException
+	 */
+	public static InputStream execToStream(final String command, final Map<String, String> environmentVariables)
+			throws IOException, ExecuteException {
 		final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		exec(command, environmentVariables, byteArrayOutputStream);
-		return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())));
+		final ByteArrayInputStream is = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+		return is;
 	}
 
+	/**
+	 * Execute a command with the specified environment variables and return its output
+	 * 
+	 * @param command
+	 * @param environmentVariables
+	 * @return
+	 * @throws IOException
+	 */
+	public static BufferedReader exec(final String command, final Map<String, String> environmentVariables) throws IOException {
+		final InputStream is = execToStream(command, environmentVariables);
+		return new BufferedReader(new InputStreamReader(is));
+	}
+
+	/**
+	 * Execute a command without environment variables and return its output
+	 * 
+	 * @param command
+	 * @return
+	 * @throws IOException
+	 */
 	public static BufferedReader exec(final String command) throws IOException {
-		return exec(command, ImmutableMap.<String, String>of());
+		return exec(command, ImmutableMap.<String, String> of());
 	}
 
-	public static void exec(final String command, final Map<String, String> environmentVariables,
-			final OutputStream outputStream) throws IOException, ExecuteException {
+	/**
+	 * Redirect the execution to a predefined outputstream.
+	 * 
+	 * @param command
+	 * @param environmentVariables
+	 * @param outputStream
+	 * @throws IOException
+	 * @throws ExecuteException
+	 */
+	public static void exec(final String command, final Map<String, String> environmentVariables, final OutputStream outputStream)
+			throws IOException, ExecuteException {
 		final Map<?, ?> executionEnvironment = EnvironmentUtils.getProcEnvironment();
 		for (final Entry<String, String> environmentVariable : environmentVariables.entrySet()) {
 			final String keyAndValue = environmentVariable.getKey() + "=" + environmentVariable.getValue();
@@ -98,6 +133,26 @@ public class UnixUtils {
 		final DefaultExecutor executor = new DefaultExecutor();
 		executor.setStreamHandler(streamHandler);
 		executor.execute(commandLine, executionEnvironment);
+	}
+
+	protected static String createTempFileFromScript(final String script) throws IOException {
+		return createTempFileFromResource(script, ".sh", true);
+	}
+
+	protected static String createTempFileFromResource(final String script, final String extension, final boolean executable)
+			throws IOException {
+		final InputStream scriptInputStream = UnixUtils.class.getResourceAsStream("/" + script);
+
+		// create a temporary file
+		final File scriptTempFile = File.createTempFile("unix-utils-", extension);
+		scriptTempFile.deleteOnExit();
+		try (FileOutputStream out = new FileOutputStream(scriptTempFile)) {
+			IOUtils.copy(scriptInputStream, out);
+		}
+		scriptTempFile.setExecutable(executable);
+
+		final String command = scriptTempFile.getAbsolutePath();
+		return command;
 	}
 
 }
